@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aerivue Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #090909;
+  --s1:     #111111;
+  --s2:     #181818;
+  --s3:     #222222;
+  --s4:     #2a2a2a;
+  --b1:     rgba(255,255,255,0.07);
+  --b2:     rgba(255,255,255,0.12);
+  --b3:     rgba(255,255,255,0.22);
+  --t1:     #f0f0ee;
+  --t2:     #9a9a95;
+  --t3:     #555550;
+  --acc:    #e8ff6e;
+  --accD:   rgba(232,255,110,0.12);
+  --grn:    #4ade80;
+  --grnD:   rgba(74,222,128,0.1);
+  --red:    #f87171;
+  --redD:   rgba(248,113,113,0.1);
+  --amb:    #fbbf24;
+  --ambD:   rgba(251,191,36,0.1);
+  --blu:    #60a5fa;
+  --bluD:   rgba(96,165,250,0.1);
+  --fD:     'DM Sans', sans-serif;
+  --fM:     'DM Mono', monospace;
+  --fS:     'Syne', sans-serif;
+  --ease:   cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{font-family:var(--fD);background:var(--bg);color:var(--t1);min-height:100vh;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:4px}
+button,input,select,textarea{font-family:var(--fD)}
+::selection{background:rgba(232,255,110,0.2);color:#fff}
+
+/* ── LAYOUT ── */
+.shell{display:flex;flex:1;min-height:0}
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--s1);border-right:1px solid var(--b1);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.main{flex:1;min-width:0;overflow-y:auto;height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:rgba(9,9,9,0.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--b1);
+  padding:0 24px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-brand{display:flex;align-items:center;gap:9px;font-family:var(--fS);font-size:1rem;font-weight:700}
+.logo-sq{
+  width:24px;height:24px;border-radius:6px;
+  background:var(--acc);position:relative;overflow:hidden;
+}
+.logo-sq::before{content:'';position:absolute;width:9px;height:9px;background:var(--bg);border-radius:2px;top:50%;left:50%;transform:translate(-50%,-50%) rotate(12deg)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.token-input{
+  padding:5px 10px;background:var(--s2);border:1px solid var(--b1);
+  border-radius:7px;color:var(--t2);font-size:12px;font-family:var(--fM);
+  width:200px;outline:none;transition:border-color 0.15s;
+}
+.token-input:focus{border-color:rgba(232,255,110,0.3);color:var(--t1)}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:var(--t3);flex-shrink:0;transition:all 0.3s}
+.conn-dot.ok{background:var(--grn);box-shadow:0 0 6px var(--grn)}
+.conn-dot.err{background:var(--red)}
+
+/* ── SIDEBAR ── */
+.sb-logo{padding:16px 16px 8px;font-family:var(--fS);font-size:0.9rem;font-weight:700;color:var(--t2)}
+.sb-section{padding:6px 10px;font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--fM);margin-top:8px}
+.sb-link{
+  display:flex;align-items:center;gap:9px;padding:8px 12px;
+  border-radius:8px;margin:1px 6px;cursor:pointer;
+  font-size:13px;color:var(--t2);transition:all 0.15s;
+  border:1px solid transparent;
+}
+.sb-link:hover{background:var(--s2);color:var(--t1)}
+.sb-link.active{background:var(--accD);color:var(--acc);border-color:rgba(232,255,110,0.15)}
+.sb-link-icon{font-size:14px;width:18px;text-align:center}
+.sb-count{
+  margin-left:auto;font-size:10px;font-family:var(--fM);
+  background:var(--s3);padding:2px 6px;border-radius:10px;color:var(--t3);
+}
+
+/* ── CONTENT PAGES ── */
+.page{display:none;padding:24px}
+.page.active{display:block}
+.page-title{font-family:var(--fS);font-size:1.4rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
+.page-sub{font-size:12px;color:var(--t3);font-family:var(--fM);margin-bottom:20px}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{
+  background:var(--s1);border:1px solid var(--b1);border-radius:14px;
+  padding:16px;transition:border-color 0.2s;
+}
+.stat-card:hover{border-color:var(--b2)}
+.stat-val{font-family:var(--fS);font-size:1.8rem;font-weight:700;letter-spacing:-0.03em;margin-bottom:3px}
+.stat-val.g{color:var(--grn)}.stat-val.r{color:var(--red)}.stat-val.a{color:var(--acc)}
+.stat-lbl{font-size:11px;color:var(--t3);font-family:var(--fM)}
+
+/* ── TOOLBAR ── */
+.toolbar{
+  display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;
+}
+.search-box{
+  flex:1;min-width:200px;
+  padding:8px 12px;background:var(--s1);border:1px solid var(--b1);
+  border-radius:9px;color:var(--t1);font-size:13px;outline:none;
+  transition:border-color 0.15s;
+}
+.search-box:focus{border-color:rgba(232,255,110,0.3)}
+.filter-sel{
+  padding:7px 10px;background:var(--s1);border:1px solid var(--b1);
+  border-radius:9px;color:var(--t2);font-size:12px;outline:none;
+  appearance:none;cursor:pointer;min-width:120px;
+}
+.filter-sel:focus{border-color:rgba(232,255,110,0.3);color:var(--t1)}
+.btn{
+  padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;
+  cursor:pointer;border:none;transition:all 0.15s;white-space:nowrap;
+}
+.btn-acc{background:var(--acc);color:var(--bg);font-weight:700}
+.btn-acc:hover{opacity:0.9;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--b1)}
+.btn-ghost:hover{background:var(--s2);color:var(--t1);border-color:var(--b2)}
+.btn-red{background:var(--redD);color:var(--red);border:1px solid rgba(248,113,113,0.2)}
+.btn-red:hover{background:rgba(248,113,113,0.18)}
+.btn-grn{background:var(--grnD);color:var(--grn);border:1px solid rgba(74,222,128,0.2)}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px}
+.btn-icon{width:28px;height:28px;padding:0;display:grid;place-items:center;font-size:13px}
+
+/* ── TABLE ── */
+.tbl-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:14px;overflow:hidden}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{
+  background:var(--s2);color:var(--t3);padding:9px 12px;text-align:left;
+  font-family:var(--fM);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;
+  border-bottom:1px solid var(--b1);white-space:nowrap;
+}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--b1);vertical-align:top;color:var(--t2)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,0.02)}
+.tbl-q{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t1)}
+.chip{
+  display:inline-block;padding:2px 7px;border-radius:4px;
+  font-size:10px;font-family:var(--fM);font-weight:600;
+  white-space:nowrap;
+}
+.chip-blue{background:var(--bluD);color:var(--blu)}
+.chip-gray{background:var(--s3);color:var(--t3)}
+.chip-acc{background:var(--accD);color:var(--acc)}
+.chip-red{background:var(--redD);color:var(--red)}
+.chip-grn{background:var(--grnD);color:var(--grn)}
+.tbl-actions{display:flex;gap:4px}
+.cb{width:14px;height:14px;accent-color:var(--acc);cursor:pointer}
+
+/* ── PAGINATION ── */
+.pager{display:flex;align-items:center;gap:8px;margin-top:14px;justify-content:flex-end}
+.pager-info{font-size:11px;color:var(--t3);font-family:var(--fM);margin-right:auto}
+.page-btn{
+  width:28px;height:28px;border-radius:7px;display:grid;place-items:center;
+  font-size:12px;cursor:pointer;border:1px solid var(--b1);
+  background:var(--s1);color:var(--t2);transition:all 0.15s;
+}
+.page-btn:hover{border-color:var(--b2);color:var(--t1)}
+.page-btn.active{background:var(--accD);border-color:rgba(232,255,110,0.2);color:var(--acc)}
+
+/* ── MODAL ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(4px);z-index:200;
+  align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--s1);border:1px solid var(--b2);border-radius:18px;
+  width:min(760px,94vw);max-height:90vh;overflow-y:auto;
+  padding:28px;animation:modalIn 0.3s var(--ease);
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-family:var(--fS);font-size:1.1rem;font-weight:700;letter-spacing:-0.02em}
+.modal-close{width:28px;height:28px;border-radius:7px;background:var(--s2);border:1px solid var(--b1);cursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--t2);transition:all 0.15s}
+.modal-close:hover{background:var(--s3);color:var(--t1)}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10px;font-family:var(--fM);color:var(--t3);text-transform:uppercase;letter-spacing:0.08em}
+.finput,.fsel,.ftextarea{
+  padding:9px 12px;background:var(--s2);border:1px solid var(--b1);
+  border-radius:9px;color:var(--t1);font-size:13px;outline:none;
+  transition:border-color 0.15s;font-family:var(--fD);
+}
+.finput:focus,.fsel:focus,.ftextarea:focus{border-color:rgba(232,255,110,0.4)}
+.ftextarea{resize:vertical;min-height:80px;line-height:1.6}
+.fsel{appearance:none;cursor:pointer}
+
+/* Options editor */
+.opts-editor{display:flex;flex-direction:column;gap:6px}
+.opt-row{display:flex;align-items:center;gap:7px}
+.opt-letter{
+  width:24px;height:24px;border-radius:5px;
+  background:var(--s3);color:var(--t3);
+  display:grid;place-items:center;font-family:var(--fM);font-size:10px;font-weight:700;
+  flex-shrink:0;
+}
+.opt-correct{background:var(--accD);color:var(--acc)}
+.opt-input{flex:1;padding:7px 10px;background:var(--s2);border:1px solid var(--b1);border-radius:7px;color:var(--t1);font-size:12px;outline:none;transition:border-color 0.15s}
+.opt-input:focus{border-color:rgba(232,255,110,0.3)}
+.set-ans{width:26px;height:26px;border-radius:6px;background:var(--s3);border:1px solid var(--b1);cursor:pointer;display:grid;place-items:center;font-size:11px;color:var(--t3);transition:all 0.15s}
+.set-ans:hover{background:var(--accD);color:var(--acc);border-color:rgba(232,255,110,0.2)}
+.set-ans.is-ans{background:var(--accD);color:var(--acc);border-color:rgba(232,255,110,0.3)}
+
+/* ── AI PANEL ── */
+.ai-panel{background:var(--s2);border:1px solid var(--b1);border-radius:12px;padding:14px;margin-top:16px}
+.ai-panel-title{font-size:10px;font-family:var(--fM);color:var(--t3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ai-btn-row{display:flex;gap:7px;flex-wrap:wrap}
+
+/* ── DIAGRAM PREVIEW ── */
+.diagram-preview{background:var(--bg);border:1px solid var(--b1);border-radius:10px;padding:16px;margin-top:12px;min-height:100px}
+.cmp-table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--b1)}
+.cmp-table{width:100%;border-collapse:collapse;font-size:12px}
+.cmp-table th{background:var(--s3);color:var(--t3);padding:8px 12px;text-align:left;font-family:var(--fM);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid var(--b1)}
+.cmp-table td{padding:8px 12px;border-bottom:1px solid var(--b1);color:var(--t2);line-height:1.5}
+.cmp-table tr:last-child td{border-bottom:none}
+.timeline-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--b1)}
+.timeline-item:last-child{border-bottom:none}
+.tl-year{font-family:var(--fM);font-size:11px;color:var(--acc);min-width:50px;font-weight:600}
+.tl-event{font-size:12px;color:var(--t2)}
+.fact-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--b1);font-size:12px}
+.fact-row:last-child{border-bottom:none}
+.fact-lbl{color:var(--t3);font-family:var(--fM)}
+.fact-val{color:var(--t1);font-weight:500}
+.key-insight{
+  margin-top:10px;padding:10px 12px;border-radius:8px;
+  background:var(--accD);border:1px solid rgba(232,255,110,0.15);
+  font-size:12px;color:var(--acc);line-height:1.6;
+}
+.insight-label{font-family:var(--fM);font-size:9px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.7;margin-bottom:4px}
+.process-steps{display:flex;flex-direction:column;gap:6px}
+.proc-step{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--s3);border-radius:7px;font-size:12px;color:var(--t2)}
+.proc-num{width:20px;height:20px;border-radius:50%;background:var(--accD);color:var(--acc);display:grid;place-items:center;font-size:9px;font-family:var(--fM);font-weight:700;flex-shrink:0}
+
+/* ── TOAST ── */
+.toast-zone{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:300}
+.toast{
+  padding:10px 16px;border-radius:9px;font-size:12px;font-family:var(--fM);
+  animation:toastIn 0.3s var(--ease);min-width:200px;
+  display:flex;align-items:center;gap:8px;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast.ok{background:var(--grnD);border:1px solid rgba(74,222,128,0.25);color:var(--grn)}
+.toast.err{background:var(--redD);border:1px solid rgba(248,113,113,0.25);color:var(--red)}
+.toast.info{background:var(--s2);border:1px solid var(--b1);color:var(--t2)}
+
+/* ── BADGE ── */
+.badge{padding:3px 8px;border-radius:4px;font-size:10px;font-family:var(--fM);font-weight:700}
+.badge-ok{background:var(--grnD);color:var(--grn)}
+.badge-err{background:var(--redD);color:var(--red)}
+
+/* ── SPINNER ── */
+.spin{width:16px;height:16px;border:1.5px solid var(--b2);border-top-color:var(--acc);border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── DIFF VIEW ── */
+.diff-panel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.diff-col{background:var(--bg);border:1px solid var(--b1);border-radius:10px;padding:14px}
+.diff-label{font-size:10px;font-family:var(--fM);color:var(--t3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+.diff-q{font-size:13px;color:var(--t1);line-height:1.65;margin-bottom:10px}
+.diff-opt{font-size:12px;color:var(--t2);padding:4px 0;display:flex;gap:7px}
+.diff-opt-key{font-family:var(--fM);font-size:10px;color:var(--t3);width:16px;flex-shrink:0}
+.diff-opt.changed{color:var(--acc);background:var(--accD);border-radius:4px;padding:4px 6px}
+.diff-opt.changed .diff-opt-key{color:var(--acc)}
+
+/* ── UTILS ── */
+.hidden{display:none!important}
+.text-acc{color:var(--acc)}.text-grn{color:var(--grn)}.text-red{color:var(--red)}
+.flex{display:flex}.items-center{align-items:center}.gap-8{gap:8px}
+.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mb-16{margin-bottom:16px}
+.selected-bar{
+  display:none;align-items:center;gap:10px;padding:8px 14px;
+  background:var(--accD);border:1px solid rgba(232,255,110,0.2);
+  border-radius:9px;margin-bottom:12px;font-size:12px;color:var(--acc);
+}
+.selected-bar.show{display:flex}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="logo-sq"></div>
+    Aerivue Admin
+  </div>
+  <div class="topbar-right">
+    <div class="conn-dot" id="connDot"></div>
+    <input class="token-input" id="tokenInput" type="password" placeholder="Admin token..." value="aerivue-admin-2024">
+    <button class="btn btn-acc btn-sm" onclick="connect()">Connect</button>
+  </div>
+</div>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo">Admin Panel</div>
+
+    <div class="sb-section">Overview</div>
+    <div class="sb-link active" onclick="nav('dashboard')">
+      <span class="sb-link-icon">▦</span> Dashboard
+    </div>
+
+    <div class="sb-section">Questions</div>
+    <div class="sb-link" onclick="nav('questions')">
+      <span class="sb-link-icon">≡</span> All Questions
+      <span class="sb-count" id="sbTotal">—</span>
+    </div>
+    <div class="sb-link" onclick="nav('questions','issues=noAnswer')">
+      <span class="sb-link-icon">!</span> No Answer
+      <span class="sb-count" id="sbNoAns">—</span>
+    </div>
+    <div class="sb-link" onclick="nav('questions','issues=noOptions')">
+      <span class="sb-link-icon">?</span> No Options
+      <span class="sb-count" id="sbNoOpts">—</span>
+    </div>
+    <div class="sb-link" onclick="nav('create')">
+      <span class="sb-link-icon">+</span> New Question
+    </div>
+
+    <div class="sb-section">Tools</div>
+    <div class="sb-link" onclick="nav('bulk')">
+      <span class="sb-link-icon">⊞</span> Bulk Edit
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div style="padding:0 24px">
+
+    <!-- DASHBOARD -->
+    <div id="pg-dashboard" class="page active">
+      <div style="padding-top:24px">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub" id="dashSub">connecting...</div>
+        <div class="stat-grid" id="statGrid">
+          <div class="stat-card"><div class="stat-val a" id="dTotal">—</div><div class="stat-lbl">total questions</div></div>
+          <div class="stat-card"><div class="stat-val g" id="dWithAns">—</div><div class="stat-lbl">with answer</div></div>
+          <div class="stat-card"><div class="stat-val r" id="dNoAns">—</div><div class="stat-lbl">missing answer</div></div>
+          <div class="stat-card"><div class="stat-val r" id="dNoOpts">—</div><div class="stat-lbl">missing options</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Subject</th><th>Count</th><th>Topics</th></tr></thead>
+              <tbody id="subjTbl"></tbody>
+            </table>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Exam</th><th>Questions</th></tr></thead>
+              <tbody id="examTbl"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTIONS LIST -->
+    <div id="pg-questions" class="page">
+      <div style="padding-top:24px">
+        <div class="page-title">Questions</div>
+        <div class="page-sub" id="qListSub">loading...</div>
+
+        <div class="toolbar">
+          <input class="search-box" id="searchQ" placeholder="Search questions..." oninput="debSearch()">
+          <select class="filter-sel" id="fSubject" onchange="loadQ(1)"><option value="">All Subjects</option></select>
+          <select class="filter-sel" id="fExam"    onchange="loadQ(1)"><option value="">All Exams</option></select>
+          <select class="filter-sel" id="fIssues"  onchange="loadQ(1)">
+            <option value="">All</option>
+            <option value="noAnswer">No Answer</option>
+            <option value="noOptions">No Options</option>
+          </select>
+          <button class="btn btn-acc" onclick="openCreate()">+ New</button>
+        </div>
+
+        <div class="selected-bar" id="selectedBar">
+          <span id="selectedCount">0 selected</span>
+          <button class="btn btn-ghost btn-sm" onclick="bulkUpdate()">Edit Fields</button>
+          <button class="btn btn-red btn-sm" onclick="bulkDelete()">Delete</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSel()">Clear</button>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:32px"><input type="checkbox" class="cb" id="selAll" onchange="toggleSelAll(this)"></th>
+                <th>#</th>
+                <th>Question</th>
+                <th>Exam</th>
+                <th>Year</th>
+                <th>Ans</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="qTbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span class="pager-info" id="pagerInfo"></span>
+          <div id="pagerBtns"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATE -->
+    <div id="pg-create" class="page">
+      <div style="padding-top:24px;max-width:680px">
+        <div class="page-title">New Question</div>
+        <div class="page-sub">Create a question manually</div>
+        <div id="createForm"></div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-acc" onclick="submitCreate()">Save Question</button>
+          <button class="btn btn-ghost" onclick="nav('questions')">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BULK -->
+    <div id="pg-bulk" class="page">
+      <div style="padding-top:24px;max-width:600px">
+        <div class="page-title">Bulk Edit</div>
+        <div class="page-sub">Select questions from the list, then use bulk actions</div>
+        <div style="padding:40px;text-align:center;background:var(--s1);border:1px solid var(--b1);border-radius:14px;color:var(--t3)">
+          Go to <span class="text-acc" style="cursor:pointer" onclick="nav('questions')">Questions →</span> and select rows to bulk edit
+        </div>
+      </div>
+    </div>
+
+    </div><!-- /padding wrapper -->
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="editModalTitle">Edit Question</div>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <div id="editForm"></div>
+    <div style="margin-top:20px;display:flex;gap:8px;justify-content:space-between">
+      <button class="btn btn-red btn-sm" id="deleteBtnModal">Delete</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeModal('editModal')">Cancel</button>
+        <button class="btn btn-acc" id="saveBtnModal">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BULK UPDATE MODAL -->
+<div class="modal-overlay" id="bulkModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">Bulk Update</div>
+      <button class="modal-close" onclick="closeModal('bulkModal')">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:14px;font-family:var(--fM)" id="bulkInfo"></div>
+    <div style="display:grid;gap:10px">
+      <div class="field">
+        <label>Subject (leave blank to skip)</label>
+        <input class="finput" id="bulkSubject" placeholder="e.g. History">
+      </div>
+      <div class="field">
+        <label>Topic (leave blank to skip)</label>
+        <input class="finput" id="bulkTopic" placeholder="e.g. Ancient India">
+      </div>
+      <div class="field">
+        <label>Exam (leave blank to skip)</label>
+        <input class="finput" id="bulkExam" placeholder="e.g. NDA">
+      </div>
+      <div class="field">
+        <label>Year (leave blank to skip)</label>
+        <input class="finput" id="bulkYear" placeholder="e.g. 2023">
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('bulkModal')">Cancel</button>
+      <button class="btn btn-acc" onclick="doBulkUpdate()">Apply to Selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST ZONE -->
+<div class="toast-zone" id="toastZone"></div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   AERIVUE ADMIN — FULL CLIENT LOGIC
+══════════════════════════════════════════════════ */
+
+const BASE  = '';   // same origin (Express serves this file)
+let TOKEN   = 'aerivue-admin-2024';
+let META    = { subjects:[], topics:[], exams:[], years:[] };
+let SELECTED= new Set();
+let curPage = 1;
+let editingId = null;
+let searchTimer = null;
+
+// ── API ──────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type':'application/json', 'x-admin-token': TOKEN }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(BASE + path, opts);
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ error: r.statusText }));
+    throw new Error(err.error || r.statusText);
+  }
+  return r.json();
+}
+
+async function connect() {
+  TOKEN = document.getElementById('tokenInput').value;
+  try {
+    const stats = await api('GET', '/api/stats');
+    document.getElementById('connDot').className = 'conn-dot ok';
+    await loadMeta();
+    loadDashboard(stats);
+    toast('Connected!', 'ok');
+  } catch(e) {
+    document.getElementById('connDot').className = 'conn-dot err';
+    toast('Connection failed: ' + e.message, 'err');
+  }
+}
+
+async function loadMeta() {
+  META = await api('GET', '/api/meta');
+  // Populate filter selects
+  const fs = document.getElementById('fSubject');
+  fs.innerHTML = '<option value="">All Subjects</option>' + META.subjects.map(s=>`<option value="${s}">${s}</option>`).join('');
+  const fe = document.getElementById('fExam');
+  fe.innerHTML = '<option value="">All Exams</option>' + META.exams.filter(Boolean).map(e=>`<option value="${e}">${e}</option>`).join('');
+}
+
+// ── NAV ──────────────────────────────────────────
+function nav(page, params='') {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('pg-'+page).classList.add('active');
+
+  if (page === 'dashboard') loadStats();
+  if (page === 'questions') loadQ(1, params);
+  if (page === 'create')    renderCreateForm();
+}
+
+// ── DASHBOARD ────────────────────────────────────
+async function loadStats() {
+  try {
+    const d = await api('GET', '/api/stats');
+    loadDashboard(d);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+function loadDashboard(d) {
+  document.getElementById('dTotal').textContent  = d.total;
+  document.getElementById('dWithAns').textContent = d.total - (d.issues?.noAnswer||0);
+  document.getElementById('dNoAns').textContent  = d.issues?.noAnswer || 0;
+  document.getElementById('dNoOpts').textContent = d.issues?.noOptions || 0;
+  document.getElementById('sbTotal').textContent  = d.total;
+  document.getElementById('sbNoAns').textContent  = d.issues?.noAnswer || 0;
+  document.getElementById('sbNoOpts').textContent = d.issues?.noOptions || 0;
+  document.getElementById('dashSub').textContent  = `${d.total} questions in database`;
+
+  const st = document.getElementById('subjTbl');
+  st.innerHTML = (d.bySubject||[]).map(s=>`
+    <tr>
+      <td><span class="chip chip-acc">${s._id||'—'}</span></td>
+      <td><span class="chip chip-gray">${s.count}</span></td>
+      <td style="font-size:11px;color:var(--t3)">${(s.topics||[]).slice(0,3).join(', ')}${s.topics?.length>3?'…':''}</td>
+    </tr>`).join('');
+
+  const et = document.getElementById('examTbl');
+  et.innerHTML = (d.byExam||[]).map(e=>`
+    <tr>
+      <td><span class="chip chip-blue">${e._id||'Unknown'}</span></td>
+      <td>${e.count}</td>
+    </tr>`).join('');
+}
+
+// ── QUESTIONS LIST ────────────────────────────────
+async function loadQ(page=1, extraParams='') {
+  curPage = page;
+  const search  = document.getElementById('searchQ')?.value || '';
+  const subject = document.getElementById('fSubject')?.value || '';
+  const exam    = document.getElementById('fExam')?.value || '';
+  const issues  = document.getElementById('fIssues')?.value || '';
+
+  let qs = `page=${page}&limit=50`;
+  if (search)  qs += `&search=${encodeURIComponent(search)}`;
+  if (subject) qs += `&subject=${encodeURIComponent(subject)}`;
+  if (exam)    qs += `&exam=${encodeURIComponent(exam)}`;
+  if (issues)  qs += `&issues=${issues}`;
+  if (extraParams) qs += '&' + extraParams;
+
+  try {
+    const d = await api('GET', `/api/questions?${qs}`);
+    document.getElementById('qListSub').textContent = `${d.total} questions`;
+    renderQTable(d.questions);
+    renderPager(d.page, d.pages, d.total);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+function renderQTable(qs) {
+  const tb = document.getElementById('qTbody');
+  if (!qs.length) { tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">No questions found</td></tr>`; return; }
+
+  tb.innerHTML = qs.map((q,i) => {
+    const sel = SELECTED.has(q._id.toString());
+    const hasAns  = q.answer && q.answer.trim();
+    const hasOpts = q.options?.length >= 2;
+    const qText   = String(q.question||'').slice(0,80) + (q.question?.length>80?'…':'');
+    return `<tr>
+      <td><input type="checkbox" class="cb row-cb" data-id="${q._id}" ${sel?'checked':''} onchange="toggleSel(this)"></td>
+      <td style="font-family:var(--fM);font-size:11px;color:var(--t3)">${(curPage-1)*50+i+1}</td>
+      <td class="tbl-q" title="${escH(q.question||'')}">${escH(qText)}</td>
+      <td>${q.exam?`<span class="chip chip-blue">${escH(q.exam)}</span>`:'-'}</td>
+      <td><span class="chip chip-gray">${q.year||'-'}</span></td>
+      <td>${hasAns ? `<span class="chip chip-grn">${String(q.answer).toUpperCase()}</span>` : `<span class="chip chip-red">!</span>`}
+          ${!hasOpts?`<span class="chip chip-red" title="No options">0</span>`:''}</td>
+      <td>
+        <div class="tbl-actions">
+          <button class="btn btn-ghost btn-sm btn-icon" title="Edit" onclick="openEdit('${q._id}')">✎</button>
+          <button class="btn btn-red btn-sm btn-icon" title="Delete" onclick="confirmDelete('${q._id}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPager(page, pages, total) {
+  document.getElementById('pagerInfo').textContent = `Page ${page} of ${pages} · ${total} total`;
+  const btns = document.getElementById('pagerBtns');
+  const range = [];
+  for (let i = Math.max(1,page-2); i <= Math.min(pages,page+2); i++) range.push(i);
+  btns.innerHTML = [
+    page>1?`<button class="page-btn" onclick="loadQ(${page-1})">‹</button>`:'',
+    ...range.map(p=>`<button class="page-btn${p===page?' active':''}" onclick="loadQ(${p})">${p}</button>`),
+    page<pages?`<button class="page-btn" onclick="loadQ(${page+1})">›</button>`:''
+  ].join('');
+}
+
+// ── SELECTION ─────────────────────────────────────
+function toggleSel(cb) {
+  const id = cb.dataset.id;
+  if (cb.checked) SELECTED.add(id); else SELECTED.delete(id);
+  updateSelBar();
+}
+function toggleSelAll(cb) {
+  document.querySelectorAll('.row-cb').forEach(c => {
+    c.checked = cb.checked;
+    if (cb.checked) SELECTED.add(c.dataset.id); else SELECTED.delete(c.dataset.id);
+  });
+  updateSelBar();
+}
+function clearSel() { SELECTED.clear(); updateSelBar(); document.querySelectorAll('.row-cb').forEach(c=>c.checked=false); document.getElementById('selAll').checked=false; }
+function updateSelBar() {
+  const bar = document.getElementById('selectedBar');
+  const n = SELECTED.size;
+  bar.classList.toggle('show', n>0);
+  document.getElementById('selectedCount').textContent = `${n} selected`;
+}
+
+// ── EDIT MODAL ────────────────────────────────────
+async function openEdit(id) {
+  editingId = id;
+  const q = await api('GET', `/api/questions/${id}`);
+  document.getElementById('editModalTitle').textContent = `Edit — ${String(q.question||'').slice(0,50)}…`;
+  document.getElementById('editForm').innerHTML = buildForm(q);
+  document.getElementById('saveBtnModal').onclick = () => saveEdit(id);
+  document.getElementById('deleteBtnModal').onclick = () => confirmDelete(id, true);
+  openModal('editModal');
+}
+
+function openCreate() { nav('create'); }
+function renderCreateForm() {
+  document.getElementById('createForm').innerHTML = buildForm({
+    subject: META.subjects[0] || '', topic: '', exam: '', year: '',
+    question: '', options: ['','','',''], answer: 'a', explanation: ''
+  });
+}
+async function submitCreate() {
+  const data = readForm();
+  if (!data.question) return toast('Question text required','err');
+  try {
+    await api('POST', '/api/questions', data);
+    toast('Question created!','ok');
+    nav('questions');
+  } catch(e) { toast(e.message,'err'); }
+}
+
+async function saveEdit(id) {
+  const data = readForm();
+  try {
+    await api('PUT', `/api/questions/${id}`, data);
+    toast('Saved!','ok');
+    closeModal('editModal');
+    loadQ(curPage);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+async function confirmDelete(id, closeAfter=false) {
+  if (!confirm('Delete this question?')) return;
+  try {
+    await api('DELETE', `/api/questions/${id}`);
+    toast('Deleted','ok');
+    if (closeAfter) closeModal('editModal');
+    loadQ(curPage);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ── BULK ──────────────────────────────────────────
+function bulkUpdate() {
+  document.getElementById('bulkInfo').textContent = `${SELECTED.size} questions selected`;
+  openModal('bulkModal');
+}
+async function doBulkUpdate() {
+  const updates = {};
+  const s=document.getElementById('bulkSubject').value.trim();
+  const t=document.getElementById('bulkTopic').value.trim();
+  const e=document.getElementById('bulkExam').value.trim();
+  const y=document.getElementById('bulkYear').value.trim();
+  if(s)updates.subject=s;if(t)updates.topic=t;if(e)updates.exam=e;if(y)updates.year=y;
+  if(!Object.keys(updates).length)return toast('Nothing to update','err');
+  try {
+    const r = await api('POST','/api/questions/bulk-update',{ids:[...SELECTED],updates});
+    toast(`Updated ${r.modified} questions`,'ok');
+    closeModal('bulkModal');
+    clearSel();
+    loadQ(curPage);
+  } catch(e){toast(e.message,'err');}
+}
+async function bulkDelete() {
+  if(!confirm(`Delete ${SELECTED.size} questions?`))return;
+  try {
+    const r=await api('POST','/api/questions/bulk-delete',{ids:[...SELECTED]});
+    toast(`Deleted ${r.deleted}`,'ok');
+    clearSel();loadQ(curPage);
+  } catch(e){toast(e.message,'err');}
+}
+
+// ── FORM BUILDER ─────────────────────────────────
+function buildForm(q) {
+  const opts = (q.options||['','','','']).concat(['','','']).slice(0,4);
+  const ans  = String(q.answer||'a').toLowerCase();
+  return `
+    <div class="form-grid">
+      <div class="field">
+        <label>Subject</label>
+        <input class="finput" id="f-subject" value="${escH(q.subject||'')}" list="subjectList">
+        <datalist id="subjectList">${META.subjects.map(s=>`<option value="${s}">`).join('')}</datalist>
+      </div>
+      <div class="field">
+        <label>Topic</label>
+        <input class="finput" id="f-topic" value="${escH(q.topic||'')}">
+      </div>
+      <div class="field">
+        <label>Exam</label>
+        <input class="finput" id="f-exam" value="${escH(q.exam||'')}" list="examList">
+        <datalist id="examList">${META.exams.filter(Boolean).map(e=>`<option value="${e}">`).join('')}</datalist>
+      </div>
+      <div class="field">
+        <label>Year</label>
+        <input class="finput" id="f-year" value="${escH(q.year||'')}">
+      </div>
+      <div class="field form-full">
+        <label>Question</label>
+        <textarea class="ftextarea" id="f-question" rows="3">${escH(q.question||'')}</textarea>
+      </div>
+      <div class="field form-full">
+        <label>Options (click ★ to set correct answer)</label>
+        <div class="opts-editor">
+          ${opts.map((o,i)=>{
+            const letter=String.fromCharCode(65+i);
+            const isAns=ans===String.fromCharCode(97+i)||ans===String(i+1);
+            return `<div class="opt-row">
+              <div class="opt-letter${isAns?' opt-correct':''}" id="ol${i}">${letter}</div>
+              <input class="opt-input" id="f-opt${i}" value="${escH(o)}" placeholder="Option ${letter}...">
+              <button class="set-ans${isAns?' is-ans':''}" id="sa${i}" onclick="setAns(${i})" title="Set as correct">★</button>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="field form-full">
+        <label>Explanation</label>
+        <textarea class="ftextarea" id="f-explanation" rows="3">${escH(q.explanation||'')}</textarea>
+      </div>
+    </div>
+
+    <!-- AI Panel -->
+    <div class="ai-panel">
+      <div class="ai-panel-title">✦ AI Tools</div>
+      <div class="ai-btn-row">
+        <button class="btn btn-ghost btn-sm" onclick="aiImprove()">✦ Improve Question</button>
+        <button class="btn btn-ghost btn-sm" onclick="aiDiagram()">◈ Generate Visual</button>
+        <button class="btn btn-ghost btn-sm" onclick="aiFixOptions()">⚡ Fix Options</button>
+      </div>
+      <div id="aiStatus" style="font-size:11px;color:var(--t3);margin-top:8px;font-family:var(--fM)"></div>
+      <div id="aiDiagramOut" class="diagram-preview hidden"></div>
+      <div id="aiDiffOut" class="diff-panel hidden"></div>
+    </div>
+  `;
+}
+
+let _currentAns = 'a';
+function setAns(i) {
+  _currentAns = String.fromCharCode(97+i);
+  for(let j=0;j<4;j++){
+    const sa=document.getElementById(`sa${j}`);
+    const ol=document.getElementById(`ol${j}`);
+    if(sa){sa.classList.toggle('is-ans',j===i)}
+    if(ol){ol.classList.toggle('opt-correct',j===i)}
+  }
+}
+
+function readForm() {
+  // Detect current answer from UI state
+  let ans = 'a';
+  for(let i=0;i<4;i++){
+    if(document.getElementById(`sa${i}`)?.classList.contains('is-ans')){
+      ans = String.fromCharCode(97+i); break;
+    }
+  }
+  return {
+    subject:    document.getElementById('f-subject')?.value.trim(),
+    topic:      document.getElementById('f-topic')?.value.trim(),
+    exam:       document.getElementById('f-exam')?.value.trim(),
+    year:       document.getElementById('f-year')?.value.trim(),
+    question:   document.getElementById('f-question')?.value.trim(),
+    options:    [0,1,2,3].map(i=>document.getElementById(`f-opt${i}`)?.value.trim()).filter(Boolean),
+    answer:     ans,
+    explanation:document.getElementById('f-explanation')?.value.trim(),
+  };
+}
+
+// ── AI FEATURES ────────────────────────────────────
+function getFormData() {
+  return {
+    question:    document.getElementById('f-question')?.value.trim(),
+    options:     [0,1,2,3].map(i=>document.getElementById(`f-opt${i}`)?.value.trim()),
+    answer:      _currentAns,
+    explanation: document.getElementById('f-explanation')?.value.trim(),
+  };
+}
+
+function setAiStatus(msg, loading=false) {
+  const el = document.getElementById('aiStatus');
+  if(el) el.innerHTML = loading ? `<span class="spin"></span> ${msg}` : msg;
+}
+
+async function aiImprove() {
+  const d = getFormData();
+  if(!d.question) return toast('Enter a question first','err');
+  setAiStatus('Improving question...', true);
+  document.getElementById('aiDiffOut').classList.add('hidden');
+
+  try {
+    const r = await api('POST', '/api/ai/improve', d);
+    setAiStatus(`Issues found: ${(r.issues_found||[]).join(', ')||'none'}`);
+
+    // Show diff
+    const diff = document.getElementById('aiDiffOut');
+    diff.classList.remove('hidden');
+    diff.innerHTML = `
+      <div class="diff-col">
+        <div class="diff-label">Current</div>
+        <div class="diff-q">${escH(d.question)}</div>
+        ${d.options.map((o,i)=>`<div class="diff-opt"><span class="diff-opt-key">${String.fromCharCode(65+i)}</span>${escH(o)}</div>`).join('')}
+      </div>
+      <div class="diff-col">
+        <div class="diff-label">Improved <span class="badge badge-ok">AI</span></div>
+        <div class="diff-q" style="color:var(--acc)">${escH(r.question)}</div>
+        ${(r.options||[]).map((o,i)=>{
+          const changed = o !== d.options[i];
+          return `<div class="diff-opt${changed?' changed':''}"><span class="diff-opt-key">${String.fromCharCode(65+i)}</span>${escH(o)}</div>`;
+        }).join('')}
+        <div style="margin-top:8px">
+          <button class="btn btn-acc btn-sm" onclick="applyAIImprovement(${JSON.stringify(r).replace(/"/g,'&quot;')})">Apply Changes</button>
+        </div>
+      </div>`;
+  } catch(e) { setAiStatus('Error: '+e.message); toast(e.message,'err'); }
+}
+
+function applyAIImprovement(r) {
+  if(document.getElementById('f-question')) document.getElementById('f-question').value = r.question;
+  (r.options||[]).forEach((o,i)=>{ if(document.getElementById(`f-opt${i}`)) document.getElementById(`f-opt${i}`).value=o; });
+  if(r.answer) setAns(r.answer.charCodeAt(0)-97);
+  if(r.explanation&&document.getElementById('f-explanation')) document.getElementById('f-explanation').value=r.explanation;
+  document.getElementById('aiDiffOut').classList.add('hidden');
+  setAiStatus('Applied!');
+  toast('AI improvements applied','ok');
+}
+
+async function aiDiagram() {
+  const d = getFormData();
+  if(!d.question) return toast('Enter a question first','err');
+  setAiStatus('Generating visual...', true);
+  document.getElementById('aiDiagramOut').classList.remove('hidden');
+  document.getElementById('aiDiagramOut').innerHTML = '<div class="spin" style="margin:20px auto;display:block"></div>';
+
+  try {
+    const r = await api('POST', '/api/ai/diagram', d);
+    setAiStatus(`Visual type: ${r.type}`);
+    renderDiagram(r);
+  } catch(e) { setAiStatus('Error: '+e.message); toast(e.message,'err'); }
+}
+
+function renderDiagram(r) {
+  const el = document.getElementById('aiDiagramOut');
+  let html = `<div style="font-size:12px;font-weight:600;color:var(--t1);margin-bottom:8px">${escH(r.title||'')}</div>`;
+
+  if (r.type === 'comparison_table' && r.data?.rows) {
+    html += `<div class="cmp-table-wrap">
+      <table class="cmp-table">
+        <tr>${(r.data.headers||[]).map(h=>`<th>${escH(h)}</th>`).join('')}</tr>
+        ${(r.data.rows||[]).map(row=>`<tr>${row.map(c=>`<td>${escH(c)}</td>`).join('')}</tr>`).join('')}
+      </table>
+    </div>`;
+  } else if (r.type === 'timeline' && r.data?.events) {
+    html += (r.data.events||[]).map(e=>`
+      <div class="timeline-item">
+        <span class="tl-year">${escH(e.year||'')}</span>
+        <span class="tl-event">${escH(e.event||'')}</span>
+      </div>`).join('');
+  } else if (r.type === 'fact_box' && r.data?.facts) {
+    html += (r.data.facts||[]).map(f=>`
+      <div class="fact-row">
+        <span class="fact-lbl">${escH(f.label||'')}</span>
+        <span class="fact-val">${escH(f.value||'')}</span>
+      </div>`).join('');
+  } else if (r.type === 'process_flow' && r.data?.steps) {
+    html += `<div class="process-steps">
+      ${(r.data.steps||[]).map((s,i)=>`
+        <div class="proc-step">
+          <div class="proc-num">${i+1}</div>
+          <span>${escH(s)}</span>
+        </div>`).join('')}
+    </div>`;
+  } else {
+    html += `<pre style="font-size:11px;color:var(--t2);white-space:pre-wrap">${escH(JSON.stringify(r.data,null,2))}</pre>`;
+  }
+
+  if (r.key_insight) {
+    html += `<div class="key-insight">
+      <div class="insight-label">Key Insight</div>
+      ${escH(r.key_insight)}
+    </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+async function aiFixOptions() {
+  const d = getFormData();
+  if(!d.options?.length) return toast('No options to fix','err');
+  setAiStatus('Fixing options...', true);
+  try {
+    const r = await api('POST', '/api/ai/fix-options', d);
+    if (r.options) {
+      (r.options||[]).forEach((o,i)=>{ if(document.getElementById(`f-opt${i}`)) document.getElementById(`f-opt${i}`).value=o; });
+      setAiStatus('Options fixed!');
+      toast('Options fixed by AI','ok');
+    }
+  } catch(e) { setAiStatus('Error: '+e.message); toast(e.message,'err'); }
+}
+
+// ── MODAL ──────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── SEARCH DEBOUNCE ────────────────────────────────
+function debSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=>loadQ(1), 400);
+}
+
+// ── TOAST ──────────────────────────────────────────
+function toast(msg, type='info') {
+  const z = document.getElementById('toastZone');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${type==='ok'?'✓':type==='err'?'✕':'·'}</span> ${escH(msg)}`;
+  z.appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+// ── UTILS ──────────────────────────────────────────
+function escH(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── CLOSE MODALS ON OVERLAY CLICK ─────────────────
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click', e=>{ if(e.target===el) el.classList.remove('open'); });
+});
+
+// ── AUTO CONNECT ON LOAD ───────────────────────────
+window.addEventListener('load', () => {
+  connect();
+});
+</script>
+</body>
+</html>
